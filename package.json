@@ -1,0 +1,21 @@
+{
+  "name": "hardhat-boilerplate",
+  "version": "1.0.0",
+  "description": "hardhat and ethersjs boilerplate for Dapp development",
+  "main": "index.js",
+  "scripts": {
+    "test": "yarn hardhat test",
+    "compile": "yarn hardhat compile",
+    "deploy": "yarn hardhat deploy"
+  },
+  "keywords": [],
+  "author": "Salman Dabbakuti",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.1.1",
+    "chai": "^4.3.6",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.0",
+    "hardhat": "^2.10.2"
+  }
+}

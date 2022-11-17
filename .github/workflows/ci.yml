@@ -1,0 +1,41 @@
+# adding tests
+# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [main, develop, init, "feat/*"]
+  pull_request:
+    branches: [main, develop, init, "feat/*"]
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [14.x, 16.x, 18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+        uses: actions/setup-node@v3
+        # uses: borales/actions-yarn@v3.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: yarn
+      - name: "Install packages"
+        run: yarn
+      - name: "Rename .env.example to .env"
+        run: mv .env.example .env
+      - name: "Start hardhat node"
+        run: yarn hardhat node & sleep 3
+      - name: "Compile contracts"
+        run: yarn compile
+      - name: "Run tests"
+        run: yarn test
+      - name: "Deploy contracts"
+        run: yarn deploy
