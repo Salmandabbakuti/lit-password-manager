@@ -1,7 +1,7 @@
 
 async function main() {
-  const contractFactory = await ethers.getContractFactory("Greeter");
-  const contract = await contractFactory.deploy("Hello, Hardhat!");
+  const contractFactory = await ethers.getContractFactory("KeyManager");
+  const contract = await contractFactory.deploy();
   await contract.deployed();
   return contract;
 }
@@ -9,12 +9,9 @@ async function main() {
 main()
   .then(async (contract) => {
     console.log("Contract deployed at:", contract.address);
-    // Write to contract
-    const tx = await contract.setGreeting("Hello Ethereum Devs!");
-    await tx.wait();
-    // Read from contract
-    const greeting = await contract.getGreeting();
-    console.log('Greeting from contract:', greeting);
+    // getting keys from contract
+    const keys = await contract.getMyKeys();
+    console.log("Keys:", keys);
   })
   .catch((error) => {
     console.error(error);

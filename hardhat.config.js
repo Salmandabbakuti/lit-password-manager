@@ -19,8 +19,8 @@ task("accounts", "Prints the list of accounts with balances", async () => {
 });
 
 task("deploy", "Deploys Contract", async () => {
-  const contractFactory = await ethers.getContractFactory("Greeter");
-  const contract = await contractFactory.deploy("Hello, Hardhat!");
+  const contractFactory = await ethers.getContractFactory("KeyManager");
+  const contract = await contractFactory.deploy();
   await contract.deployed();
   console.log("contract deployed at:", contract.address);
 });

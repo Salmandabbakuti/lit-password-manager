@@ -1,29 +1,48 @@
-# hardhat-boilerplate
+# Lit Password Manager
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts with balances.
+A web3-native password manager that utilizes decentralized infrastructure and lit protocol to store and retrieve passwords.
 
-> Rename `env.example` to `.env` and add your env specific keys.
+Lit Protocol is a decentralized key management network powered by threshold cryptography. A blockchain-agnostic middleware layer, Lit can be used to read and write data between blockchains and off-chain platforms, facilitating encryption, access control, and automation for the open web via programmatic signing.
 
-Try running some of the following tasks:
+#### Tech Stack
 
-```shell
+- Frontend: Next.js, Antd
+- Smartcontracts: Solidity, Hardhat
+- Storage: IPFS, Pinata
+- Encryption: Lit Protocol
+- Blockchain Network: Polygon Mumbai
+
+### Prerequisites
+
+1. [Node.js](https://nodejs.org/en/download/)
+2. Private key of an Ethereum account with some ETH/Matic in it
+3. RPC endpoint of an Ethereum node of your choice
+4. [Metamask](https://metamask.io/) extension installed in your browser
+5. Pinata API keys
+
+## Getting Started
+
+> Note: This project is still in development and is not ready for production use.
+> Copy the `.env.example` file to `.env` and fill in the required values.
+
+#### Deploying Contract
+
+```
 yarn install
 
-yarn hardhat node # starts local node
+yarn hardhat compile
 
-yarn hardhat accounts # list accounts with balances
+yarn hardhat deploy --network polygonTest
 
-yarn hardhat balance --account '0x47a9...' # show balance eth of specified account
+# copy contract address deployed and paste it in client's .env file
+```
 
-yarn hardhat compile # compiles contracts
+### Running the client
 
-yarn hardhat deploy --network local # deploys contract defined in tasks on specified network
+> Copy the `.env.example` file to `.env` and fill in the required values.
 
-yarn hardhat run --network local scripts/deploy.js # deploys contract in scripts/deploy.js
-
-yarn hardhat test # runs tests
-
-yarn hardhat clean # removes all compiled and deployed artifacts
-
-yarn hardhat help # shows help
+```bash
+cd client
+yarn install
+yarn dev
 ```
