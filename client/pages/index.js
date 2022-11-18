@@ -546,7 +546,6 @@ export default function Home() {
           <div className={styles.encryptDecryptContainer}>
             <label htmlFor="site">Site</label>
             <Input
-              className={styles.input}
               type="text"
               name="site"
               placeholder="example.com"
@@ -554,7 +553,6 @@ export default function Home() {
             />
             <label htmlFor="username">Username</label>
             <Input
-              className={styles.input}
               type="text"
               name="username"
               placeholder="Username"
@@ -562,7 +560,6 @@ export default function Home() {
             />
             <label htmlFor="password">Password</label>
             <Input.Password
-              className={styles.input}
               type="password"
               name="password"
               value={credentials?.password}
@@ -603,7 +600,6 @@ export default function Home() {
           <div className={styles.encryptDecryptContainer}>
             <label htmlFor="site">Site</label>
             <Input
-              className={styles.input}
               type="text"
               name="site"
               value={editingCredentials?.site || ""}
@@ -612,7 +608,6 @@ export default function Home() {
             />
             <label htmlFor="username">Username</label>
             <Input
-              className={styles.input}
               type="text"
               name="username"
               value={editingCredentials?.username || ""}
@@ -621,7 +616,6 @@ export default function Home() {
             />
             <label htmlFor="password">Password</label>
             <Input.Password
-              className={styles.input}
               type="password"
               name="password"
               value={editingCredentials?.password || ""}
