@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import LitJsSdk from "@lit-protocol/sdk-browser";
 import { GraphQLClient, gql } from "graphql-request";
-// import pinataSDK from "@pinata/sdk";
 import { Web3Provider } from "@ethersproject/providers";
 import { Contract } from "@ethersproject/contracts";
 import {
@@ -12,10 +10,10 @@ import {
   Input,
   Popconfirm,
   Modal,
-  Spin,
   message,
-  Typography,
-  Table
+  Table,
+  notification,
+  Spin
 } from "antd";
 import {
   PlusCircleOutlined,
@@ -25,37 +23,11 @@ import {
 import styles from "../styles/Home.module.css";
 import "antd/dist/antd.css";
 import Lit from "../lib/lit";
-import {
-  errorNotification,
-  successNotification,
-  infoNotification
-} from "../utils";
-
 const lit = new Lit({ autoConnect: true });
 
 const client = new GraphQLClient(
-  "https://api.thegraph.com/subgraphs/name/salmandabbakuti/key-manager",
-  { headers: {} }
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/graphql"
 );
-
-const handleNotification = (type, message, description) => {
-  switch (type) {
-    case "success":
-      successNotification(message, description);
-      setLogMessage("");
-      break;
-    case "error":
-      errorNotification(message, description);
-      setLogMessage("");
-      break;
-    case "info":
-      infoNotification(message, description);
-      setLogMessage("");
-      break;
-    default:
-      break;
-  }
-};
 
 const GET_CREDENTIALS_QUERY = gql`
     query keys(
@@ -83,8 +55,6 @@ const GET_CREDENTIALS_QUERY = gql`
       }
     }
   `;
-
-// const pinata = new pinataSDK(process.env.NEXT_PUBLIC_PINATA_API_KEY, process.env.NEXT_PUBLIC_PINATA_API_SECRET_KEY);
 
 const contractAddress = "0xC47CF83080ED29e32ccDf1C9a411C9b614820236";
 const abi = [
@@ -118,6 +88,7 @@ export default function Home() {
   const [credentials, setCredentials] = useState({});
   const [credentialsArr, setCredentialsArr] = useState([]);
   const [logMessage, setLogMessage] = useState("");
+  const [log, setLog] = useState(null);
   const [loading, setLoading] = useState(false);
   const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
@@ -126,6 +97,16 @@ export default function Home() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
+
+  const handleNotification = ({ type, message, description }) => {
+    notification[type]({
+      message,
+      description,
+      placement: "topRight",
+      duration: 6,
+    });
+    setLog(null);
+  };
 
   // only the user who encrypted the data can decrypt it
   const accessControlConditions = [
@@ -191,12 +172,10 @@ export default function Home() {
       const signer = provider.getSigner();
       const contract = new Contract(contractAddress, abi, signer);
       setContract(contract);
-      setLogMessage("Wallet connected");
-      infoNotification("Wallet connected", "Wallet connected");
+      setLog({ type: "info", message: "Wallet connected successfully", description: "" });
     } else {
-      infoNotification("Please install Metamask");
       console.log("Please use Web3 enabled browser");
-      setLogMessage("Please use Web3 enabled browser");
+      setLog({ type: "error", message: "Please use Web3 enabled browser", description: "" });
     }
   };
 
@@ -224,10 +203,9 @@ export default function Home() {
 
   const handleSaveCredentials = async (credentials) => {
     // check username, password, domain are not
-    if (!account) return infoNotification("Please connect wallet first");
-    if (!contract) return setLogMessage("Please connect wallet first");
+    if (!account || !contract) return setLog({ type: "error", message: "Please connect your wallet", description: "" });
     if (!["site", "username", "password"].every((prop) => credentials[prop]))
-      return errorNotification("Please fill all the fields");
+      return setLog({ type: "error", message: "Please fill all the fields", description: "" });
     // check if credentials already exist
     const existingCredentials = credentialsArr.find(
       (cred) =>
@@ -236,7 +214,7 @@ export default function Home() {
         cred.password === credentials.password
     );
     if (existingCredentials)
-      return errorNotification("Credentials already exists!");
+      return setLog({ type: "error", message: "Credentials already exist", description: "" });
     setLoading(true);
     try {
       const credentialsString = JSON.stringify(credentials);
@@ -260,54 +238,44 @@ export default function Home() {
       setLogMessage(
         `Credentials encrypted and saved to IPFS: ${response.IpfsHash}`
       );
-      infoNotification(
-        "Credentials encrypted and saved to IPFS",
-        response.IpfsHash
-      );
+      setLog({ type: "info", message: "Credentials encrypted and saved to IPFS", description: response.IpfsHash });
+      console.log("Save/Update Ipfs hash-->", response.IpfsHash);
       // save ipfs hash to smart contract
       if (credentials?.id) {
         // update
         const tx = await contract.updateKey(credentials.id, response.IpfsHash);
-        setLogMessage(
-          `Credentials update submitted. waiting for confirmation: ${tx.hash}`
-        );
+        console.log("Update Tx-->", tx.hash);
+        setLog({ type: "info", message: "Credentials update submitted. waiting for confirmation", description: tx.hash });
         await tx.wait();
         setLoading(false);
-        successNotification("Credentials updated successfully", tx.hash);
-        return setLogMessage("Credentials updated");
+        return setLog({ type: "success", message: "Credentials updated successfully", description: "" });
       }
       const tx = await contract.addKey(response.IpfsHash);
-      setLogMessage(
-        `Transaction submitted: ${tx.hash}. Waiting for confirmation...`
-      );
+      console.log("Add Tx-->", tx.hash);
+      setLog({ type: "info", message: "Transaction submitted. Waiting for confirmation.", description: tx.hash });
       await tx.wait();
-      setLogMessage(`Transaction confirmed: ${tx.hash}`);
-      successNotification("Credentials added successfully");
+      setLog({ type: "success", message: "Credentials saved successfully", description: "" });
       setLoading(false);
     } catch (error) {
       console.log("Something went wrong While saving credentials", error);
-      errorNotification("Something went wrong While saving credentials");
-      setLogMessage("Something went wrong");
+      setLog({ type: "error", message: "Something went wrong While saving credentials", description: error.message });
       setLoading(false);
     }
   };
 
   const handleDeleteCredential = async (id) => {
-    if (!contract) return setLogMessage("Please connect wallet first");
+    if (!contract) return setLog({ type: "error", message: "Please connect your wallet", description: "" });
     setLoading(true);
     try {
       const tx = await contract.softDeleteKey(id);
-      setLogMessage(
-        `Transaction submitted: ${tx.hash}. Waiting for confirmation...`
-      );
+      console.log("Delete Tx-->", tx.hash);
+      setLog({ type: "info", message: "Transaction submitted. Waiting for confirmation.", description: tx.hash });
       await tx.wait();
-      setLogMessage(`Transaction confirmed: ${tx.hash}`);
-      successNotification("Credentials deleted successfully");
+      setLog({ type: "success", message: "Credentials deleted successfully", description: "" });
       setLoading(false);
     } catch (error) {
-      errorNotification("Something went wrong while deleting credentials!");
       console.log("Something went wrong While deleting credentials", error);
-      setLogMessage("Something went wrong");
+      setLog({ type: "error", message: "Something went wrong while deleting credentials" });
       setLoading(false);
     }
   };
@@ -452,9 +420,8 @@ export default function Home() {
       })
       .catch((err) => {
         console.log("err", err);
-        errorNotification("Something went wrong while fetching credentials");
-        console.error("Something went wrong while getting credentials:", error);
-        setLogMessage("Something Went Wrong!");
+        console.error("Something went wrong while getting credentials:", err);
+        setLog({ type: "error", message: "Something went wrong while getting credentials!", description: err.message });
         setLoading(false);
       });
   };
@@ -623,7 +590,6 @@ export default function Home() {
               {provider ? "Save" : "Connect Wallet"}
             </Button>
           </div>
-          {loading && <p>Loading...</p>}
           <p>{logMessage}</p>
         </Modal>
         {/* End of Add Password Modal */}
@@ -684,7 +650,6 @@ export default function Home() {
               {provider ? "Save" : "Connect Wallet"}
             </Button>
           </div>
-          {loading && <p>Loading...</p>}
           <p>{logMessage}</p>
         </Modal>
         {/* End of View/Edit Password Modal */}
@@ -727,8 +692,7 @@ export default function Home() {
           </>
         )}
         {/* End of View Password By Hash Component */}
-        {loading && <p>Loading...</p>}
-        {logMessage && errorNotification(logMessage)}
+        {log && handleNotification(log)}
         <p>{logMessage}</p>
       </main>
 
