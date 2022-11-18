@@ -530,7 +530,6 @@ export default function Home() {
         {!provider && (
           <Button
             type="primary"
-            className={styles.button}
             onClick={handleConnectWallet}
           >
             Connect Wallet
@@ -570,25 +569,25 @@ export default function Home() {
               placeholder="Password"
               onChange={handleInputChange}
             />
-            <Button
-              type="primary"
-              // className={styles.button}
-              onClick={handleAddGenerateRandomPassword}
-            >
-              Suggest Strong Password
-            </Button>
-            <Button
-              type="primary"
-              className={styles.button}
-              loading={loading}
-              onClick={
-                provider
-                  ? () => handleSaveCredentials(credentials)
-                  : handleConnectWallet
-              }
-            >
-              {provider ? "Save" : "Connect Wallet"}
-            </Button>
+            <Space>
+              <Button
+                type="primary"
+                onClick={handleAddGenerateRandomPassword}
+              >
+                Suggest Strong Password
+              </Button>
+              <Button
+                type="primary"
+                loading={loading}
+                onClick={
+                  provider
+                    ? () => handleSaveCredentials(credentials)
+                    : handleConnectWallet
+                }
+              >
+                {provider ? "Save" : "Connect Wallet"}
+              </Button>
+            </Space>
           </div>
           <p>{logMessage}</p>
         </Modal>
@@ -630,25 +629,25 @@ export default function Home() {
               onChange={handleEditingInputChange}
             />
             {/* generte random password button */}
-            <Button
-              type="primary"
-              // className={styles.button}
-              onClick={handleEditingGenerateRandomPassword}
-            >
-              Suggest Strong Password
-            </Button>
-            <Button
-              type="primary"
-              className={styles.button}
-              loading={loading}
-              onClick={
-                provider
-                  ? () => handleSaveCredentials(editingCredentials)
-                  : handleConnectWallet
-              }
-            >
-              {provider ? "Save" : "Connect Wallet"}
-            </Button>
+            <Space>
+              <Button
+                type="primary"
+                onClick={handleEditingGenerateRandomPassword}
+              >
+                Suggest Strong Password
+              </Button>
+              <Button
+                type="primary"
+                loading={loading}
+                onClick={
+                  provider
+                    ? () => handleSaveCredentials(editingCredentials)
+                    : handleConnectWallet
+                }
+              >
+                {provider ? "Save" : "Connect Wallet"}
+              </Button>
+            </Space>
           </div>
           <p>{logMessage}</p>
         </Modal>
