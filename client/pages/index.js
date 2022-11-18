@@ -14,7 +14,8 @@ import {
   Form,
   Typography,
   Popconfirm,
-  Modal
+  Modal,
+  Spin
 } from "antd";
 import {
   PlusCircleOutlined,
@@ -24,6 +25,7 @@ import {
 import styles from "../styles/Home.module.css";
 import "antd/dist/antd.css";
 import Lit from "../lib/lit";
+import { errorNotification, successNotification, infoNotification } from "../utils";
 
 const lit = new Lit({ autoConnect: true });
 
@@ -77,6 +79,21 @@ export default function Home() {
     }
   }, [contract]);
 
+  useEffect(() => {
+    if (provider) {
+      console.log('window.ethereum', window.ethereum);
+      window.ethereum.on('accountsChanged', () => window.location.reload());
+      window.ethereum.on('chainChanged', () => window.location.reload());
+      window.ethereum.on('connect', (info) => console.log('connected to network', info));
+    }
+    return () => {
+      if (provider) {
+        window.ethereum.removeAllListeners();
+      }
+    };
+
+  }, [provider]);
+
   const handleConnectWallet = async () => {
     if (window?.ethereum) {
       const accounts = await window.ethereum.request({
@@ -104,7 +121,9 @@ export default function Home() {
       const contract = new Contract(contractAddress, abi, signer);
       setContract(contract);
       setLogMessage("Wallet connected");
+      infoNotification("Wallet connected", "Wallet connected");
     } else {
+      infoNotification("Please install Metamask");
       console.log("Please use Web3 enabled browser");
       setLogMessage("Please use Web3 enabled browser");
     }
@@ -134,17 +153,17 @@ export default function Home() {
     });
 
   const handleSaveCredentials = async (credentials) => {
-    // check username, password, domain are not empty
+    // check username, password, domain are not 
     if (!contract) return setLogMessage("Please connect wallet first");
-    if (!["site", "username", "password"].every((prop) => prop in credentials))
-      return setLogMessage("Please fill all fields");
+    if (!["site", "username", "password"].every((prop) => credentials[prop]))
+      return errorNotification("Please fill all the fields");
     // check if credentials already exist
     const existingCredentials = credentialsArr.find((cred) =>
       cred.site === credentials.site &&
       cred.username === credentials.username &&
       cred.password === credentials.password
     );
-    if (existingCredentials) return setLogMessage("Credentials already exist");
+    if (existingCredentials) return errorNotification("Credentials already exists!");
     setLoading(true);
     try {
       const credentialsString = JSON.stringify(credentials);
@@ -167,6 +186,7 @@ export default function Home() {
       setLogMessage(
         `Credentials encrypted and saved to IPFS: ${response.IpfsHash}`
       );
+      infoNotification("Credentials encrypted and saved to IPFS", response.IpfsHash);
       // save ipfs hash to smart contract
       if (credentials?.id) {
         // update
@@ -176,6 +196,7 @@ export default function Home() {
         );
         await tx.wait();
         setLoading(false);
+        successNotification("Credentials updated successfully", tx.hash);
         return setLogMessage("Credentials updated");
       }
       const tx = await contract.addKey(response.IpfsHash);
@@ -184,9 +205,11 @@ export default function Home() {
       );
       await tx.wait();
       setLogMessage(`Transaction confirmed: ${tx.hash}`);
+      successNotification("Credentials added successfully");
       setLoading(false);
     } catch (error) {
       console.log("Something went wrong While saving credentials", error);
+      errorNotification("Something went wrong While saving credentials");
       setLogMessage("Something went wrong");
       setLoading(false);
     }
@@ -202,8 +225,10 @@ export default function Home() {
       );
       await tx.wait();
       setLogMessage(`Transaction confirmed: ${tx.hash}`);
+      successNotification("Credentials deleted successfully");
       setLoading(false);
     } catch (error) {
+      errorNotification("Something went wrong While deleting credentials");
       console.log("Something went wrong While deleting credentials", error);
       setLogMessage("Something went wrong");
       setLoading(false);
@@ -292,6 +317,7 @@ export default function Home() {
       console.log("credentialsArr-->", credentialsArr);
       setLoading(false);
     } catch (error) {
+      errorNotification("Something went wrong while fetching credentials");
       console.error("Something went wrong while getting credentials:", error);
       setLogMessage("Something Went Wrong!");
       setLoading(false);
@@ -445,6 +471,7 @@ export default function Home() {
             <div className={styles.credentialsContainer}>
               <h2>My Passwords</h2>
               <Button type="primary" onClick={() => setIsAddModalOpen(true)}>Add<PlusCircleOutlined /></Button>
+              {loading && <Spin />}
               {credentialsArr.length ? credentialsArr.map((credential, index) => (
                 <div key={index} className={styles.credentialsRow}>
                   <Input
@@ -488,7 +515,7 @@ export default function Home() {
                 </div>
               )) : (
                 <p>
-                  You dont have any saved credentials yet. Click on Add
+                  Saved passwords will appear here. Click on <b>+</b> to add new
                 </p>
               )}
             </div>
@@ -517,7 +544,7 @@ export default function Home() {
                     type="text"
                     placeholder="Site"
                     value={decryptedCredentials?.site || ""}
-                    disabled
+                    readOnly
                   />
                   <label htmlFor="username">Username</label>
                   <Input
@@ -525,7 +552,7 @@ export default function Home() {
                     type="text"
                     placeholder="Decrypted Username.."
                     value={decryptedCredentials?.username || ""}
-                    disabled
+                    readOnly
                   />
                   <label htmlFor="password">Password</label>
                   <Input.Password
@@ -533,7 +560,7 @@ export default function Home() {
                     type="text"
                     placeholder="Decrypted Password.."
                     value={decryptedCredentials?.password || ""}
-                    disabled
+                    readOnly
                   />
                 </div>
               )}
@@ -557,4 +584,4 @@ export default function Home() {
       </footer>
     </div>
   );
-}
+};
