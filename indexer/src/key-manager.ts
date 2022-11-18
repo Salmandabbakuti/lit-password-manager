@@ -7,8 +7,8 @@ import {
 import { Key } from "../generated/schema";
 
 export function handleKeyAdded(event: KeyAddedEvent): void {
-  let key = new Key(event.params.owner.toHex() + "-" + event.params.id.toHex());
-  key.id = event.params.id.toString();
+  let key = new Key(event.params.owner.toHex() + "-" + event.params.id.toString());
+  key.keyId = event.params.id.toString();
   key.ipfsHash = event.params.ipfsHash;
   key.owner = event.params.owner;
   key.isDeleted = false;
@@ -30,7 +30,7 @@ export function handleKeyUpdated(event: KeyUpdatedEvent): void {
   let key = Key.load(event.params.owner.toHex() + "-" + event.params.id.toString());
   if (!key) {
     key = new Key(event.params.owner.toHex() + "-" + event.params.id.toString());
-    key.id = event.params.id.toString();
+    key.keyId = event.params.id.toString();
     key.owner = event.params.owner;
     key.isDeleted = false;
   }

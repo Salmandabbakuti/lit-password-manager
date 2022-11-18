@@ -1,5 +1,6 @@
-type Key @entity(immutable: true) {
-  id: String! # uint256
+type Key @entity {
+  id: ID! # uint256
+  keyId: String!
   ipfsHash: String! # string
   keyA: String! # string
   keyB: String!

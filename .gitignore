@@ -8,6 +8,7 @@ bin-release/
 .settings/
 node_modules/
 build/
+generated/
 package-lock.json
 
 # Executables
