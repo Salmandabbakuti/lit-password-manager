@@ -13,7 +13,9 @@ import {
   Popconfirm,
   Modal,
   Spin,
-  message
+  message,
+  Typography,
+  Table
 } from "antd";
 import {
   PlusCircleOutlined,
@@ -35,6 +37,25 @@ const client = new GraphQLClient(
   "https://api.thegraph.com/subgraphs/name/salmandabbakuti/key-manager",
   { headers: {} }
 );
+
+const handleNotification = (type, message, description) => {
+  switch (type) {
+    case "success":
+      successNotification(message, description);
+      setLogMessage("");
+      break;
+    case "error":
+      errorNotification(message, description);
+      setLogMessage("");
+      break;
+    case "info":
+      infoNotification(message, description);
+      setLogMessage("");
+      break;
+    default:
+      break;
+  }
+};
 
 const GET_CREDENTIALS_QUERY = gql`
     query keys(
@@ -284,7 +305,7 @@ export default function Home() {
       successNotification("Credentials deleted successfully");
       setLoading(false);
     } catch (error) {
-      errorNotification("Something went wrong While deleting credentials");
+      errorNotification("Something went wrong while deleting credentials!");
       console.log("Something went wrong While deleting credentials", error);
       setLogMessage("Something went wrong");
       setLoading(false);
@@ -438,6 +459,90 @@ export default function Home() {
       });
   };
 
+  const columns = [
+    {
+      title: "Site",
+      key: "site",
+      sorter: (a, b) => a.site.localeCompare(b.site),
+      ellipsis: true,
+      width: "20%",
+      render: ({ site }) => (
+        <Input
+          readOnly
+          className={styles.rowInput}
+          type="text"
+          value={site}
+          // copy to clipboard on click
+          onClick={(e) => {
+            navigator.clipboard.writeText(e.target.value);
+            message.success("Copied to clipboard");
+          }}
+        />
+      )
+    },
+    {
+      title: "Username",
+      sorter: (a, b) => a.username.localeCompare(b.username),
+      key: "username",
+      width: "20%",
+      render: ({ username }) => (
+        <Input
+          readOnly
+          className={styles.rowInput}
+          type="text"
+          value={username}
+
+          onClick={(e) => {
+            navigator.clipboard.writeText(e.target.value);
+            message.success("Copied to clipboard");
+          }}
+        />
+      ),
+    },
+    {
+      title: "Password",
+      key: "password",
+      sorter: false,
+      width: "20%",
+      render: ({ password }) => (
+        <Input.Password
+          value={password}
+          // copy to clipboard
+          onClick={(e) => {
+            e.preventDefault();
+            navigator.clipboard.writeText(password);
+            message.success("Copied to clipboard");
+          }}
+        />
+      ),
+    },
+    {
+      title: "Actions",
+      width: "10%",
+      render: (row) => (
+        <Space size="small">
+          <Button
+            type="primary"
+            onClick={() => {
+              setEditingCredentials(row);
+              setIsEditModalOpen(true);
+            }}
+          >
+            <EditOutlined />
+          </Button>
+          <Popconfirm
+            title="Are you sure?"
+            onConfirm={() => handleDeleteCredential(row.id)}
+          >
+            <Button type="primary" danger>
+              <DeleteOutlined />
+            </Button>
+          </Popconfirm>
+        </Space>
+      )
+    }
+  ];
+
   return (
     <div className={styles.container}>
       <Head>
@@ -587,92 +692,43 @@ export default function Home() {
         {/* Start of View Password By Hash Component */}
         {provider && (
           <>
-            <div className={styles.credentialsContainer}>
-              <h2>My Passwords</h2>
-              <Space>
-                <Input.Search
-                  placeholder="Search by Ipfs Hash.."
-                  value={searchInput}
-                  enterButton
-                  allowClear
-                  loading={loading}
-                  onSearch={getCredentials}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-                <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
-                  Add
-                  <PlusCircleOutlined />
-                </Button>
-              </Space>
-              {loading && <Spin />}
-              {credentialsArr.length ? (
-                credentialsArr.map((credential, index) => (
-                  <div key={index} className={styles.credentialsRow}>
-                    <Input
-                      readOnly
-                      className={styles.rowInput}
-                      type="text"
-                      value={credential.site}
-                      // copy to clipboard on click
-                      onClick={(e) => {
-                        navigator.clipboard.writeText(e.target.value);
-                        message.success("Copied to clipboard");
-                      }}
-                    />
-                    <Input
-                      readOnly
-                      className={styles.rowInput}
-                      type="text"
-                      value={credential.username}
-
-                      onClick={(e) => {
-                        navigator.clipboard.writeText(e.target.value);
-                        message.success("Copied to clipboard");
-                      }}
-                    />
-                    <Input.Password
-                      readOnly
-                      className={styles.rowInput}
-                      type="password"
-                      value={credential.password}
-                      onClick={(e) => {
-                        navigator.clipboard.writeText(e.target.value);
-                        message.success("Copied to clipboard");
-                      }}
-                    />
-                    {/* edit button */}
-                    <Space size="small">
-                      <Button
-                        type="primary"
-                        onClick={() => {
-                          setEditingCredentials(credential);
-                          setIsEditModalOpen(true);
-                        }}
-                      >
-                        <EditOutlined />
-                      </Button>
-                      <Popconfirm
-                        title="Are you sure?"
-                        onConfirm={() => handleDeleteCredential(credential.id)}
-                      >
-                        <Button type="primary" danger>
-                          <DeleteOutlined />
-                        </Button>
-                      </Popconfirm>
-                    </Space>
-                  </div>
-                ))
-              ) : (
-                <p>
-                  Saved passwords will appear here. Click on <b>+</b> to add new
-                </p>
-              )}
-            </div>
+            <h2>My Passwords</h2>
+            <Space>
+              <Input.Search
+                placeholder="Search by Ipfs Hash.."
+                value={searchInput}
+                enterButton
+                allowClear
+                loading={loading}
+                onSearch={getCredentials}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
+                Add
+                <PlusCircleOutlined />
+              </Button>
+            </Space>
+            <Table
+              className="table_grid"
+              columns={columns}
+              rowKey="id"
+              dataSource={credentialsArr}
+              scroll={{ x: 970 }}
+              loading={loading}
+              pagination={{
+                pageSizeOptions: [10, 25, 50, 100],
+                showSizeChanger: true,
+                defaultCurrent: 1,
+                defaultPageSize: 10,
+                size: "default"
+              }}
+              onChange={() => { }}
+            />
           </>
         )}
         {/* End of View Password By Hash Component */}
-
         {loading && <p>Loading...</p>}
+        {logMessage && errorNotification(logMessage)}
         <p>{logMessage}</p>
       </main>
 
