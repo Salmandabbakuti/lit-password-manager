@@ -1,0 +1,9 @@
+type Key @entity(immutable: true) {
+  id: String! # uint256
+  ipfsHash: String! # string
+  keyA: String! # string
+  keyB: String!
+  owner: Bytes! # address
+  isDeleted: Boolean! # bool
+  updatedAt: BigInt! # uint256
+}

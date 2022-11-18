@@ -31,7 +31,7 @@ const lit = new Lit({ autoConnect: true });
 
 // const pinata = new pinataSDK(process.env.NEXT_PUBLIC_PINATA_API_KEY, process.env.NEXT_PUBLIC_PINATA_API_SECRET_KEY);
 
-const contractAddress = "0x2B740BC4FB538400b3dD4f2f1c79DB57cc52499A";
+const contractAddress = "0xC47CF83080ED29e32ccDf1C9a411C9b614820236";
 const abi = [
   "function addKey(string _ipfsHash)",
   "function getMyKeys() view returns (tuple(uint256 id, string ipfsHash, bool isDeleted)[])",
@@ -67,9 +67,27 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
+  const [account, setAccount] = useState(null);
   const [editingCredentials, setEditingCredentials] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // only the user who encrypted the data can decrypt it
+  const accessControlConditions = [
+    {
+      contractAddress: '',
+      standardContractType: '',
+      chain: 'mumbai',
+      method: '',
+      parameters: [
+        ':userAddress',
+      ],
+      returnValueTest: {
+        comparator: '=',
+        value: account
+      }
+    }
+  ];
 
   const router = useRouter();
 
@@ -117,6 +135,7 @@ export default function Home() {
       }
       console.log("chainId:", chainId);
       setProvider(provider);
+      setAccount(accounts[0]);
       const signer = provider.getSigner();
       const contract = new Contract(contractAddress, abi, signer);
       setContract(contract);
@@ -154,6 +173,7 @@ export default function Home() {
 
   const handleSaveCredentials = async (credentials) => {
     // check username, password, domain are not 
+    if (!account) return infoNotification('Please connect wallet first');
     if (!contract) return setLogMessage("Please connect wallet first");
     if (!["site", "username", "password"].every((prop) => credentials[prop]))
       return errorNotification("Please fill all the fields");
@@ -169,8 +189,9 @@ export default function Home() {
       const credentialsString = JSON.stringify(credentials);
       console.log("credentialsString", credentialsString);
       const { encryptedString, encryptedSymmetricKey } =
-        await lit.encryptString(credentialsString);
+        await lit.encryptString(credentialsString, accessControlConditions);
       console.log("encryptedString", encryptedString);
+      console.log('acls-->', accessControlConditions);
       // save encryptedString and encryptedSymmetricKey to ipfs
       // convert stringblob to base64 string
       const encryptedStringBase64 = await LitJsSdk.blobToBase64String(
@@ -254,7 +275,8 @@ export default function Home() {
       const encryptedStringBlob = LitJsSdk.base64StringToBlob(encryptedString);
       const { decryptedString } = await lit.decryptString(
         encryptedSymmetricKey,
-        encryptedStringBlob
+        encryptedStringBlob,
+        accessControlConditions
       );
       console.log("decryptedString", decryptedString);
       const decryptedCredentials = JSON.parse(decryptedString);
@@ -303,7 +325,8 @@ export default function Home() {
           LitJsSdk.base64StringToBlob(encryptedString);
         const { decryptedString } = await lit.decryptString(
           encryptedSymmetricKey,
-          encryptedStringBlob
+          encryptedStringBlob,
+          accessControlConditions
         );
         console.log("decryptedString-->", decryptedString);
         const decryptedCredentials = JSON.parse(decryptedString);

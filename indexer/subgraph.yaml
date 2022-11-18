@@ -1,0 +1,32 @@
+specVersion: 0.0.5
+description: A subgraph for the KeyManager
+features:
+  - nonFatalErrors
+  - ipfsOnEthereumContracts
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: KeyManager
+    network: mumbai
+    source:
+      address: "0xC47CF83080ED29e32ccDf1C9a411C9b614820236"
+      abi: KeyManager
+      startBlock: 29209537
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Key
+      abis:
+        - name: KeyManager
+          file: ./abis/KeyManager.json
+      eventHandlers:
+        - event: KeyAdded(uint256,string,indexed address)
+          handler: handleKeyAdded
+        - event: KeyDeleted(uint256,indexed address)
+          handler: handleKeyDeleted
+        - event: KeyUpdated(uint256,string,indexed address)
+          handler: handleKeyUpdated
+      file: ./src/key-manager.ts

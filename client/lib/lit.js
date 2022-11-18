@@ -2,20 +2,6 @@ import LitJsSdk from "@lit-protocol/sdk-browser";
 
 const client = new LitJsSdk.LitNodeClient({ debug: false });
 
-const accessControlConditions = [
-  {
-    contractAddress: "0xB56946D84E4Dd277A8E575D5Dae551638010C6A8",
-    standardContractType: "ERC721",
-    chain: "mumbai",
-    method: "balanceOf",
-    parameters: [":userAddress", "latest"],
-    returnValueTest: {
-      comparator: ">",
-      value: "0", // 0 ETH
-    },
-  },
-];
-
 class Lit {
   litNodeClient;
   constructor({ autoConnect = false }) {
@@ -28,7 +14,7 @@ class Lit {
     this.litNodeClient = client;
   }
 
-  async encryptString(stringToEncrypt) {
+  async encryptString(stringToEncrypt, accessControlConditions) {
     if (!this.litNodeClient) {
       await this.connect();
     }
@@ -51,7 +37,7 @@ class Lit {
     };
   };
 
-  async decryptString(encryptedSymmetricKey, encryptedString) {
+  async decryptString(encryptedSymmetricKey, encryptedString, accessControlConditions) {
     if (!this.litNodeClient) {
       await this.connect();
     }
