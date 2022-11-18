@@ -53,6 +53,9 @@ const pinDataToIPFS = async (data) => {
   return response.json();
 };
 
+const generteRandomPassword = () => Math.random().toString(36).slice(-10);
+
+
 export default function Home() {
   const [ipfsHash, setIpfsHash] = useState("");
   const [decryptedCredentials, setdecryptedCredentials] = useState("");
@@ -109,6 +112,20 @@ export default function Home() {
 
   const handleInputChange = (event) =>
     setCredentials({ ...credentials, [event.target.name]: event.target.value });
+
+  const handleEditingGenerateRandomPassword = () => {
+    const randomPassword = generteRandomPassword();
+    setEditingCredentials({
+      ...editingCredentials,
+      password: randomPassword
+    });
+  };
+
+  const handleAddGenerateRandomPassword = () => {
+    const randomPassword = generteRandomPassword();
+    setCredentials({ ...credentials, password: randomPassword });
+  };
+
 
   const handleEditingInputChange = (event) =>
     setEditingCredentials({
@@ -333,9 +350,17 @@ export default function Home() {
               className={styles.input}
               type="password"
               name="password"
+              value={credentials?.password}
               placeholder="Password"
               onChange={handleInputChange}
             />
+            <Button
+              type="primary"
+              // className={styles.button}
+              onClick={handleAddGenerateRandomPassword}
+            >
+              Suggest Strong Password
+            </Button>
             <Button
               type="primary"
               className={styles.button}
@@ -389,6 +414,14 @@ export default function Home() {
               placeholder="Password"
               onChange={handleEditingInputChange}
             />
+            {/* generte random password button */}
+            <Button
+              type="primary"
+              // className={styles.button}
+              onClick={handleEditingGenerateRandomPassword}
+            >
+              Suggest Strong Password
+            </Button>
             <Button type="primary"
               className={styles.button}
               loading={loading}
