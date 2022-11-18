@@ -436,7 +436,6 @@ export default function Home() {
       render: ({ site }) => (
         <Input
           readOnly
-          className={styles.rowInput}
           type="text"
           value={site}
           // copy to clipboard on click
@@ -455,10 +454,8 @@ export default function Home() {
       render: ({ username }) => (
         <Input
           readOnly
-          className={styles.rowInput}
           type="text"
           value={username}
-
           onClick={(e) => {
             navigator.clipboard.writeText(e.target.value);
             message.success("Copied to clipboard");
