@@ -6,17 +6,14 @@ import { GraphQLClient, gql } from "graphql-request";
 // import pinataSDK from "@pinata/sdk";
 import { Web3Provider } from "@ethersproject/providers";
 import { Contract } from "@ethersproject/contracts";
-import Table from "antd/lib/table";
 import {
   Space,
   Button,
-  Tooltip,
   Input,
-  Form,
-  Typography,
   Popconfirm,
   Modal,
-  Spin
+  Spin,
+  message
 } from "antd";
 import {
   PlusCircleOutlined,
@@ -616,18 +613,32 @@ export default function Home() {
                       className={styles.rowInput}
                       type="text"
                       value={credential.site}
+                      // copy to clipboard on click
+                      onClick={(e) => {
+                        navigator.clipboard.writeText(e.target.value);
+                        message.success("Copied to clipboard");
+                      }}
                     />
                     <Input
                       readOnly
                       className={styles.rowInput}
                       type="text"
                       value={credential.username}
+
+                      onClick={(e) => {
+                        navigator.clipboard.writeText(e.target.value);
+                        message.success("Copied to clipboard");
+                      }}
                     />
                     <Input.Password
                       readOnly
                       className={styles.rowInput}
                       type="password"
                       value={credential.password}
+                      onClick={(e) => {
+                        navigator.clipboard.writeText(e.target.value);
+                        message.success("Copied to clipboard");
+                      }}
                     />
                     {/* edit button */}
                     <Space size="small">
