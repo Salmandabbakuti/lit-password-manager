@@ -18,6 +18,27 @@ Lit Protocol is a decentralized key management network powered by threshold cryp
 
 ![Workflow Architecture](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/lit-pm-flow.png)
 
+##### Access Control conditions:
+
+> Its quite surprising that many people use NFT or eth balance based access control. If I posses specific NFT or balance in my account, I should be able to decrypt other users passords? No. So, I'm using the logic where the user who encrypted the password can only decrypt it. This is a very basis of encryption and decryption of passwords. I'm not sure if this is the right way to do it. I'm open to suggestions.
+
+```javascript
+// only the user who encrypted the data should be able to decrypt it
+const accessControlConditions = [
+  {
+    contractAddress: "",
+    standardContractType: "",
+    chain: "mumbai",
+    method: "",
+    parameters: [":userAddress"],
+    returnValueTest: {
+      comparator: "=",
+      value: account // ,<=== user address should be dynamic and match the user address connected to the wallet
+    }
+  }
+];
+```
+
 ### Prerequisites
 
 1. [Node.js](https://nodejs.org/en/download/) Nodejs version 14.17.0 or higher
@@ -43,6 +64,7 @@ Lit Protocol is a decentralized key management network powered by threshold cryp
 #### Deploying Contract (Optional)
 
 ```
+
 yarn install
 
 yarn hardhat compile
@@ -50,6 +72,7 @@ yarn hardhat compile
 yarn hardhat deploy --network polygonTest
 
 # copy contract address deployed and paste it in client's .env file
+
 ```
 
 #### Deploying Subgraph (Optional)
