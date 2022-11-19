@@ -16,7 +16,7 @@ Lit Protocol is a decentralized key management network powered by threshold cryp
 
 #### Workflow Architecture:
 
-![Workflow Architecture](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/lit-pm-flow.png)
+![Workflow Architecture](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/lit-pm-flow.png)
 
 ##### Access Control conditions:
 
@@ -111,10 +111,10 @@ I do not give any warranties and will not be liable for any loss incurred throug
 
 https://user-images.githubusercontent.com/29351207/202835182-75ab1802-73a2-4cc9-ad89-0154cd1e6a6e.mp4
 
-![Screenshot1](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/home-screenshot.png)
+![Screenshot1](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/home-screenshot.png)
 
-![Screenshot2](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/edit-password.png)
+![Screenshot2](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/edit-password.png)
 
-![Screenshot3](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/update_tx-screenshot.png)
+![Screenshot3](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/update_tx-screenshot.png)
 
-![Screenshot4](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/save_success-screenshot.png)
+![Screenshot4](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/save_success-screenshot.png)
