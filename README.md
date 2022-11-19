@@ -38,7 +38,9 @@ Lit Protocol is a decentralized key management network powered by threshold cryp
 > Note: This project is still in development and is not ready for production use.
 > Copy the `.env.example` file to `.env` and fill in the required values.
 
-#### Deploying Contract
+> There are some optional steps that you can skip and use my deployed resources instead.
+
+#### Deploying Contract (Optional)
 
 ```
 yarn install
@@ -90,4 +92,6 @@ https://user-images.githubusercontent.com/29351207/202835182-75ab1802-73a2-4cc9-
 
 ![Screenshot2](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/edit-password.png)
 
-![Screenshot3]()
+![Screenshot3](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/update_tx-screenshot.png)
+
+![Screenshot4](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/save_success-screenshot.png)
