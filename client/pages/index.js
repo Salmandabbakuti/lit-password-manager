@@ -13,12 +13,13 @@ import {
   message,
   Table,
   notification,
-  Spin
+  Spin,
 } from "antd";
 import {
   PlusCircleOutlined,
   EditOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  SyncOutlined
 } from "@ant-design/icons";
 import styles from "../styles/Home.module.css";
 import "antd/dist/antd.css";
@@ -83,8 +84,6 @@ const pinDataToIPFS = async (data) => {
 const generteRandomPassword = () => Math.random().toString(36).slice(-10);
 
 export default function Home() {
-  // const [ipfsHash, setIpfsHash] = useState("");
-  // const [decryptedCredentials, setdecryptedCredentials] = useState("");
   const [credentials, setCredentials] = useState({});
   const [credentialsArr, setCredentialsArr] = useState([]);
   const [logMessage, setLogMessage] = useState("");
@@ -249,14 +248,26 @@ export default function Home() {
         setLog({ type: "info", message: "Credentials update submitted. waiting for confirmation", description: tx.hash });
         await tx.wait();
         setLoading(false);
-        return setLog({ type: "success", message: "Credentials updated successfully", description: "" });
+        setIsEditModalOpen(false);
+        // refresh credentials after 20 seconds
+        setTimeout(() => {
+          console.log("Refreshing credentials");
+          getCredentials();
+        }, 20000);
+        return setLog({ type: "success", message: "Credentials updated successfully", description: "Refreshes in 20 seconds.." });
       }
       const tx = await contract.addKey(response.IpfsHash);
       console.log("Add Tx-->", tx.hash);
       setLog({ type: "info", message: "Transaction submitted. Waiting for confirmation.", description: tx.hash });
       await tx.wait();
-      setLog({ type: "success", message: "Credentials saved successfully", description: "" });
+      setLog({ type: "success", message: "Credentials saved successfully", description: "Refreshes in 20 seconds.." });
+      setIsAddModalOpen(false);
       setLoading(false);
+      // refresh credentials after 20 seconds
+      setTimeout(() => {
+        console.log("Refreshing credentials");
+        getCredentials();
+      }, 20000);
     } catch (error) {
       console.log("Something went wrong While saving credentials", error);
       setLog({ type: "error", message: "Something went wrong While saving credentials", description: error.message });
@@ -274,103 +285,17 @@ export default function Home() {
       await tx.wait();
       setLog({ type: "success", message: "Credentials deleted successfully", description: "" });
       setLoading(false);
+      // refresh credentials after 20 seconds
+      setTimeout(() => {
+        console.log("Refreshing credentials...");
+        getCredentials();
+      }, 20000);
     } catch (error) {
       console.log("Something went wrong While deleting credentials", error);
       setLog({ type: "error", message: "Something went wrong while deleting credentials" });
       setLoading(false);
     }
   };
-
-  // const handleViewSavedCredentials = async () => {
-  //   if (!ipfsHash || /^\s*$/.test(ipfsHash))
-  //     return setLogMessage("Please enter a valid IPFS hash");
-  //   setdecryptedCredentials("");
-  //   setLoading(true);
-  //   try {
-  //     const response = await fetch(
-  //       `https://gateway.pinata.cloud/ipfs/${ipfsHash}`
-  //     );
-  //     const { encryptedString, encryptedSymmetricKey } = await response.json();
-  //     console.log("encryptedString", encryptedString);
-  //     console.log("encryptedSymmetricKey", encryptedSymmetricKey);
-  //     // check if encryptedSymmetricKey is empty and string is not empty
-  //     if (!encryptedString || !encryptedSymmetricKey)
-  //       return setLogMessage("Invalid IPFS hash");
-  //     // encryptedString to stringblob
-  //     const encryptedStringBlob = LitJsSdk.base64StringToBlob(encryptedString);
-  //     const { decryptedString } = await lit.decryptString(
-  //       encryptedSymmetricKey,
-  //       encryptedStringBlob,
-  //       accessControlConditions
-  //     );
-  //     console.log("decryptedString", decryptedString);
-  //     const decryptedCredentials = JSON.parse(decryptedString);
-  //     console.log("decryptedCredentials", decryptedCredentials);
-  //     setdecryptedCredentials(decryptedCredentials);
-  //     setLogMessage("Credentials retrived successfully");
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.error(
-  //       "Something went wrong while viewing saved credentials:",
-  //       error
-  //     );
-  //     setLogMessage("Something Went Wrong!");
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const getMyCredentials = async () => {
-  //   if (!contract) return setLogMessage("Please connect wallet first");
-  //   setLoading(true);
-  //   try {
-  //     const myKeys = await contract.getMyKeys();
-  //     // filter out deleted keys
-  //     const unDeletedKeys = myKeys.filter((key) => !key.isDeleted);
-  //     console.log("myKeys", myKeys);
-  //     console.log("unDeletedKeys", unDeletedKeys);
-  //     const credentialsArr = [];
-  //     for (let i = 0; i < unDeletedKeys.length; i++) {
-  //       const response = await fetch(
-  //         `https://gateway.pinata.cloud/ipfs/${unDeletedKeys[i]?.ipfsHash}`
-  //       ).catch((err) => {
-  //         console.error("Failed to get data from Ipfs", err);
-  //       });
-  //       if (!response) continue;
-  //       const { encryptedString, encryptedSymmetricKey } =
-  //         await response.json();
-  //       console.log("encryptedString", encryptedString);
-  //       console.log("encryptedSymmetricKey", encryptedSymmetricKey);
-  //       // check if encryptedSymmetricKey is empty and string is not empty
-  //       if (!encryptedString || !encryptedSymmetricKey) {
-  //         console.error("Invalid IPFS hash");
-  //         continue;
-  //       }
-  //       // encryptedString to stringblob
-  //       const encryptedStringBlob =
-  //         LitJsSdk.base64StringToBlob(encryptedString);
-  //       const { decryptedString } = await lit.decryptString(
-  //         encryptedSymmetricKey,
-  //         encryptedStringBlob,
-  //         accessControlConditions
-  //       );
-  //       console.log("decryptedString-->", decryptedString);
-  //       const decryptedCredentials = JSON.parse(decryptedString);
-  //       credentialsArr.push({
-  //         id: unDeletedKeys[i].id,
-  //         ...decryptedCredentials
-  //       });
-  //       console.log("decryptedCredentials-->", decryptedCredentials);
-  //     }
-  //     setCredentialsArr(credentialsArr);
-  //     console.log("credentialsArr-->", credentialsArr);
-  //     setLoading(false);
-  //   } catch (error) {
-  //     errorNotification("Something went wrong while fetching credentials");
-  //     console.error("Something went wrong while getting credentials:", error);
-  //     setLogMessage("Something Went Wrong!");
-  //     setLoading(false);
-  //   }
-  // };
 
   const getCredentials = () => {
     setLoading(true);
@@ -489,6 +414,7 @@ export default function Home() {
           <Button
             type="primary"
             onClick={() => {
+              console.log("row", row);
               setEditingCredentials(row);
               setIsEditModalOpen(true);
             }}
@@ -533,6 +459,55 @@ export default function Home() {
             Connect Wallet
           </Button>
         )}
+
+        {/* Start of Passwords Container */}
+        {provider && (
+          <>
+            <h2>My Passwords</h2>
+            <Space>
+              <Input.Search
+                placeholder="Search by Ipfs Hash.."
+                value={searchInput}
+                enterButton
+                allowClear
+                loading={loading}
+                onSearch={getCredentials}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
+                Add
+                <PlusCircleOutlined />
+              </Button>
+              <Button type="primary" onClick={getCredentials}>
+                Refresh
+                <SyncOutlined />
+              </Button>
+              <Button type="primary" onClick={() => {
+                setCredentials([]);
+                setProvider(null);
+              }}>
+                Logout
+              </Button>
+            </Space>
+            <Table
+              className="table_grid"
+              columns={columns}
+              rowKey="id"
+              dataSource={credentialsArr}
+              scroll={{ x: 970 }}
+              loading={loading}
+              pagination={{
+                pageSizeOptions: [10, 25, 50, 100],
+                showSizeChanger: true,
+                defaultCurrent: 1,
+                defaultPageSize: 10,
+                size: "default"
+              }}
+              onChange={() => { }}
+            />
+          </>
+        )}
+        {/* End of Passwords Container */}
 
         {/* Start of Add Password Modal */}
         <Modal
@@ -637,44 +612,6 @@ export default function Home() {
         </Modal>
         {/* End of View/Edit Password Modal */}
 
-        {/* Start of View Password By Hash Component */}
-        {provider && (
-          <>
-            <h2>My Passwords</h2>
-            <Space>
-              <Input.Search
-                placeholder="Search by Ipfs Hash.."
-                value={searchInput}
-                enterButton
-                allowClear
-                loading={loading}
-                onSearch={getCredentials}
-                onChange={(e) => setSearchInput(e.target.value)}
-              />
-              <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
-                Add
-                <PlusCircleOutlined />
-              </Button>
-            </Space>
-            <Table
-              className="table_grid"
-              columns={columns}
-              rowKey="id"
-              dataSource={credentialsArr}
-              scroll={{ x: 970 }}
-              loading={loading}
-              pagination={{
-                pageSizeOptions: [10, 25, 50, 100],
-                showSizeChanger: true,
-                defaultCurrent: 1,
-                defaultPageSize: 10,
-                size: "default"
-              }}
-              onChange={() => { }}
-            />
-          </>
-        )}
-        {/* End of View Password By Hash Component */}
         {log && handleNotification(log)}
         <p>{logMessage}</p>
       </main>
