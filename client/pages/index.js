@@ -56,7 +56,7 @@ const GET_CREDENTIALS_QUERY = gql`
     }
   `;
 
-const contractAddress = "0xC47CF83080ED29e32ccDf1C9a411C9b614820236";
+const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 const abi = [
   "function addKey(string _ipfsHash)",
   "function getMyKeys() view returns (tuple(uint256 id, string ipfsHash, bool isDeleted)[])",
