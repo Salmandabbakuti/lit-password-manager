@@ -146,36 +146,37 @@ export default function Home() {
   }, [provider]);
 
   const handleConnectWallet = async () => {
-    if (window?.ethereum) {
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts"
-      });
-      console.log("Using account: ", accounts[0]);
-      const provider = new Web3Provider(window.ethereum);
-      const { chainId } = await provider.getNetwork();
-      if (chainId !== 80001) {
-        alert("Wrong Network. Please connect to the Polygon testnet");
-        // switch to the polygon testnet
-        window.ethereum
-          .request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: "0x13881" }]
-          })
-          .catch((err) => {
-            console.error(err.message);
-            return;
-          });
+    try {
+      if (window?.ethereum) {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts"
+        });
+        console.log("Using account: ", accounts[0]);
+        const provider = new Web3Provider(window.ethereum);
+        const { chainId } = await provider.getNetwork();
+        if (chainId !== 80001) {
+          setLog({ type: "error", message: "Switching to Polygon Mumbai Testnet", description: "Please connect to Mumbai Testnet" });
+          // switch to the polygon testnet
+          await window.ethereum
+            .request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0x13881" }]
+            });
+        }
+        console.log("chainId:", chainId);
+        setProvider(provider);
+        setAccount(accounts[0]);
+        const signer = provider.getSigner();
+        const contract = new Contract(contractAddress, abi, signer);
+        setContract(contract);
+        setLog({ type: "info", message: "Wallet connected successfully", description: "" });
+      } else {
+        console.log("Please use Web3 enabled browser");
+        setLog({ type: "error", message: "Please use Web3 enabled browser", description: "" });
       }
-      console.log("chainId:", chainId);
-      setProvider(provider);
-      setAccount(accounts[0]);
-      const signer = provider.getSigner();
-      const contract = new Contract(contractAddress, abi, signer);
-      setContract(contract);
-      setLog({ type: "info", message: "Wallet connected successfully", description: "" });
-    } else {
-      console.log("Please use Web3 enabled browser");
-      setLog({ type: "error", message: "Please use Web3 enabled browser", description: "" });
+    } catch (err) {
+      console.log("Error connecting wallet", err);
+      setLog({ type: "error", message: "Something went wrong while connecting wallet!", description: "" });
     }
   };
 
