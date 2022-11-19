@@ -20,7 +20,7 @@ Lit Protocol is a decentralized key management network powered by threshold cryp
 
 ##### Access Control conditions:
 
-> Its quite surprising that many people use NFT or eth balance based access control. If I posses specific NFT or balance in my account, I should be able to decrypt other users passords? No. So, I'm using the logic where the user who encrypted the password can only decrypt it. This is a very basis of encryption and decryption of passwords. I'm not sure if this is the right way to do it. I'm open to suggestions.
+> Its quite surprising that many people use NFT or eth balance based access control. If I posses specific NFT or balance in my account, I should be able to decrypt other users passwords? No. So, I'm using the logic where the user who encrypted the password can only decrypt it. This is a very basis of encryption and decryption of passwords. I'm not sure if this is the right way to do it. I'm open to suggestions.
 
 ```javascript
 // only the user who encrypted the data should be able to decrypt it
