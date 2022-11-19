@@ -7,11 +7,16 @@ Lit Protocol is a decentralized key management network powered by threshold cryp
 #### Tech Stack
 
 - Frontend: Next.js, Antd
+- Web3 Client: ethers.js
 - Smartcontracts: Solidity, Hardhat
 - Storage: IPFS, Pinata
 - Encryption: Lit Protocol
 - Blockchain Network: Polygon Mumbai
 - Indexer: The Graph
+
+#### Workflow Architecture:
+
+![Workflow Architecture](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/lit-pm-flow.png)
 
 ### Prerequisites
 
@@ -66,16 +71,10 @@ yarn dev
 
 ### Demo
 
-#### Workflow Architecture:
+https://user-images.githubusercontent.com/29351207/202831112-100637a9-0c0c-4b41-9711-d9e69ff3bce3.mp4
 
-![Workflow Architecture](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/feat/indexing/resources/lit-pm-flow.png)
+![Screenshot1](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/home-screenshot.png)
 
-#### Demo Video:
+![Screenshot2](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/edit-password.png)
 
-[Lit Password Manager Demo](https://github.com/Salmandabbakuti/lit-password-manager/blob/feat/indexing/resources/intro_video.mp4)](Intro Video)
-
-[Screenshot1](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/feat/indexing/resources/home-screenshot.png)
-
-[Screenshot2](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/feat/indexing/resources/edit-password.png)
-
-[Screenshot3]()
+![Screenshot3]()
