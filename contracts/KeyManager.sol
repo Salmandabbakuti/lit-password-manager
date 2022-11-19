@@ -8,13 +8,17 @@ contract KeyManager {
         bool isDeleted;
     }
 
+    event KeyAdded(uint id, string ipfsHash, address indexed owner);
+    event KeyUpdated(uint id, string ipfsHash, address indexed owner);
+    event KeyDeleted(uint id, address indexed owner);
+
     mapping(address => Key[]) keys;
     mapping(address => mapping(string => bool)) isIpfsHashExists;
 
     modifier onlyUniqueIpfsHash(string calldata _ipfsHash) {
         require(
-            bytes(_ipfsHash).length > 32,
-            "KeyManger: IPFS hash is required!"
+            bytes(_ipfsHash).length == 46,
+            "KeyManger: Actual IPFS hash is required!"
         );
         require(
             !isIpfsHashExists[msg.sender][_ipfsHash],
@@ -37,6 +41,7 @@ contract KeyManager {
     {
         keys[msg.sender].push(Key(keys[msg.sender].length, _ipfsHash, false));
         isIpfsHashExists[msg.sender][_ipfsHash] = true;
+        emit KeyAdded(keys[msg.sender].length - 1, _ipfsHash, msg.sender);
     }
 
     function updateKey(uint _id, string calldata _ipfsHash)
@@ -46,10 +51,12 @@ contract KeyManager {
     {
         keys[msg.sender][_id].ipfsHash = _ipfsHash;
         isIpfsHashExists[msg.sender][_ipfsHash] = true;
+        emit KeyUpdated(_id, _ipfsHash, msg.sender);
     }
 
     function softDeleteKey(uint _id) public onlyExistingKey(_id) {
         keys[msg.sender][_id].isDeleted = true;
+        emit KeyDeleted(_id, msg.sender);
     }
 
     function getMyKeys() public view returns (Key[] memory) {

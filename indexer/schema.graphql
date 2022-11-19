@@ -1,0 +1,10 @@
+type Key @entity {
+  id: ID! # uint256
+  keyId: String!
+  ipfsHash: String! # string
+  keyA: String! # string
+  keyB: String!
+  owner: Bytes! # address
+  isDeleted: Boolean! # bool
+  updatedAt: BigInt! # uint256
+}

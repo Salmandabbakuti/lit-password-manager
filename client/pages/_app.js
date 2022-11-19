@@ -9,7 +9,11 @@ function MyApp({ Component, pageProps }) {
     <Layout>
       <Header>
         <div className="logo" />
-        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']}>
+        <Menu theme="dark"
+          mode="horizontal"
+          defaultSelectedKeys={['2']}
+          items={[]}
+        >
         </Menu>
       </Header>
       <Component {...pageProps} />

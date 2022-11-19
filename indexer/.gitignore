@@ -1,0 +1,7 @@
+node_modules/
+generated/
+build/
+.deps/
+artifacts/
+.cache/
+.openzepplin/
