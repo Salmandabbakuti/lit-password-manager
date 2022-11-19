@@ -574,13 +574,9 @@ export default function Home() {
               <Button
                 type="primary"
                 loading={loading}
-                onClick={
-                  provider
-                    ? () => handleSaveCredentials(credentials)
-                    : handleConnectWallet
-                }
+                onClick={() => handleSaveCredentials(credentials)}
               >
-                {provider ? "Save" : "Connect Wallet"}
+                Save
               </Button>
             </Space>
           </div>
@@ -631,13 +627,9 @@ export default function Home() {
               <Button
                 type="primary"
                 loading={loading}
-                onClick={
-                  provider
-                    ? () => handleSaveCredentials(editingCredentials)
-                    : handleConnectWallet
-                }
+                onClick={() => handleSaveCredentials(editingCredentials)}
               >
-                {provider ? "Save" : "Connect Wallet"}
+                Save
               </Button>
             </Space>
           </div>
