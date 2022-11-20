@@ -81,7 +81,11 @@ const pinDataToIPFS = async (data) => {
   return response.json();
 };
 
-const generteRandomPassword = () => Math.random().toString(36).slice(-10);
+const generteRandomPassword = () => {
+  //  generate 12 characters alphanumeric password
+  const chars = "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return Array(12).fill().map(() => chars[(Math.floor(Math.random() * chars.length))]).join("");
+};
 
 export default function Home() {
   const [credentials, setCredentials] = useState({});
@@ -214,7 +218,9 @@ export default function Home() {
         cred.password === credentials.password
     );
     if (existingCredentials)
-      return setLog({ type: "error", message: "Credentials already exist", description: "" });
+      return setLog({ type: "error", message: "Credentials already exist", description: "You already saved a password with this username for this site" });
+    // check if password length is 12 characters or longer
+    if (credentials.password.length < 12) return setLog({ type: "error", message: "Password should be 12 characters or longer", description: "" });
     setLoading(true);
     try {
       const credentialsString = JSON.stringify(credentials);
@@ -283,7 +289,7 @@ export default function Home() {
       console.log("Delete Tx-->", tx.hash);
       setLog({ type: "info", message: "Transaction submitted. Waiting for confirmation.", description: tx.hash });
       await tx.wait();
-      setLog({ type: "success", message: "Credentials deleted successfully", description: "" });
+      setLog({ type: "success", message: "Credentials deleted successfully", description: "Refreshes in 20 seconds.." });
       setLoading(false);
       // refresh credentials after 20 seconds
       setTimeout(() => {

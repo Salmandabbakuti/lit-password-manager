@@ -40,26 +40,23 @@ const accessControlConditions = [
 ```
 
 ### Prerequisites
+> There are some optional prerequisites that you can skip and use my deployed resources instead.
 
-1. [Node.js](https://nodejs.org/en/download/) Nodejs version 14.17.0 or higher
-2. Private key of an Ethereum account with some ETH/Matic in it
-3. RPC endpoint of an Ethereum node of your choice
-4. [Metamask](https://metamask.io/) extension installed in your browser
-5. Pinata API keys
-6. The Graph Account (if you want to deploy your own subgraph)
+1. [Node.js](https://nodejs.org/en/download/) Nodejs version 14.17.0 or higher.
+2. Private key of an Ethereum account with some ETH/Matic in it. (Optional)
+3. RPC endpoint of an Ethereum node of your choice. (Optional)
+4. [Metamask](https://metamask.io/) extension installed in your browser.
+5. Pinata API keys.
+6. The Graph Account. (Optional)
 
 ### Deployed Resources:
 
 - [Lit Password Manager App](https://lit-password-manager.vercel.app/)
 - [Lit Password Manager Subgraph](https://api.thegraph.com/subgraphs/name/salmandabbakuti/key-manager)
-- [Lit Password Manager Smartcontracts](https://mumbai.polygonscan.com/address/0xc47cf83080ed29e32ccdf1c9a411c9b614820236#code)
+- [Lit Password Manager Smartcontract](https://mumbai.polygonscan.com/address/0xc47cf83080ed29e32ccdf1c9a411c9b614820236#code)
 
 ## Getting Started
-
-> Note: This project is still in development and is not ready for production use.
 > Copy the `.env.example` file to `.env` and fill in the required values.
-
-> There are some optional steps that you can skip and use my deployed resources instead.
 
 #### Deploying Contract (Optional)
 
