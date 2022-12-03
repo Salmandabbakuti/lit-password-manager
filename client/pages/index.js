@@ -158,7 +158,7 @@ export default function Home() {
         const provider = new Web3Provider(window.ethereum);
         const { chainId } = await provider.getNetwork();
         if (chainId !== 80001) {
-          setLog({ type: "error", message: "Switching to Polygon Mumbai Testnet", description: "Please connect to Mumbai Testnet" });
+          setLog({ type: "info", message: "Switching to Polygon Mumbai Testnet", description: "Please connect to Mumbai Testnet" });
           // switch to the polygon testnet
           await window.ethereum
             .request({
@@ -206,11 +206,14 @@ export default function Home() {
     });
 
   const handleSaveCredentials = async (credentials) => {
-    // check username, password, domain are not
     if (!account || !contract) return setLog({ type: "error", message: "Please connect your wallet", description: "" });
+    // check username, password, domain are not empty
     if (!["site", "username", "password"].every((prop) => credentials[prop]))
       return setLog({ type: "error", message: "Please fill all the fields", description: "" });
-    // check if credentials already exist
+    // check if username already exists for the site while creating new credentials
+    if (!credentials?.id && credentialsArr.some((cred) => cred.username === credentials.username && cred.site === credentials.site))
+      return setLog({ type: "error", message: "Username already exists", description: "You already saved a password with this username for this site" });
+    // check if credentials already saved
     const existingCredentials = credentialsArr.find(
       (cred) =>
         cred.site === credentials.site &&
@@ -218,7 +221,7 @@ export default function Home() {
         cred.password === credentials.password
     );
     if (existingCredentials)
-      return setLog({ type: "error", message: "Credentials already exist", description: "You already saved a password with this username for this site" });
+      return setLog({ type: "error", message: "Credentials already saved", description: "You already saved a password with this username for this site" });
     // check if password length is 12 characters or longer
     if (credentials.password.length < 12) return setLog({ type: "error", message: "Password should be 12 characters or longer", description: "" });
     setLoading(true);
@@ -305,6 +308,7 @@ export default function Home() {
 
   const getCredentials = () => {
     setLoading(true);
+    console.log("fetching credentials and decrypting...");
     client
       .request(GET_CREDENTIALS_QUERY, {
         orderBy: "updatedAt",
@@ -318,13 +322,10 @@ export default function Home() {
         }
       })
       .then(async ({ keys }) => {
-        console.log("keys", keys);
         const credentialsArr = [];
         for (let i = 0; i < keys.length; i++) {
           const { keyA: encryptedString, keyB: encryptedSymmetricKey } =
             keys[i];
-          console.log("encryptedString", encryptedString);
-          console.log("encryptedSymmetricKey", encryptedSymmetricKey);
           // check if encryptedSymmetricKey is empty and string is not empty
           if (!encryptedString || !encryptedSymmetricKey) {
             console.error("Invalid IPFS hash");
@@ -338,13 +339,11 @@ export default function Home() {
             encryptedStringBlob,
             accessControlConditions
           );
-          console.log("decryptedString-->", decryptedString);
           const decryptedCredentials = JSON.parse(decryptedString);
           credentialsArr.push({
             id: keys[i].keyId,
             ...decryptedCredentials
           });
-          console.log("decryptedCredentials-->", decryptedCredentials);
         }
         setCredentialsArr(credentialsArr);
         console.log("credentialsArr-->", credentialsArr);
@@ -373,7 +372,7 @@ export default function Home() {
           // copy to clipboard on click
           onClick={(e) => {
             navigator.clipboard.writeText(e.target.value);
-            message.success("Copied to clipboard");
+            message.success("Site copied to clipboard");
           }}
         />
       )
@@ -390,7 +389,7 @@ export default function Home() {
           value={username}
           onClick={(e) => {
             navigator.clipboard.writeText(e.target.value);
-            message.success("Copied to clipboard");
+            message.success("Username copied to clipboard");
           }}
         />
       ),
@@ -407,7 +406,7 @@ export default function Home() {
           onClick={(e) => {
             e.preventDefault();
             navigator.clipboard.writeText(password);
-            message.success("Copied to clipboard");
+            message.success("Password copied to clipboard");
           }}
         />
       ),
