@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-91718b05eda0a64fef1db31fb3faf810aaecd396",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/CredentialManager.sol": "project/contracts/CredentialManager.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/CredentialManager.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.28;\n\ncontract CredentialManager {\n    struct Credential {\n        bytes32 dataHash;\n        string cipherText;\n    }\n\n    mapping(address => Credential[]) credentials;\n    mapping(address => mapping(bytes32 => bool)) hashExists;\n\n    event CredentialAdded(\n        bytes32 indexed dataHash,\n        string cipherText,\n        address indexed owner\n    );\n    event CredentialUpdated(\n        bytes32 indexed oldDataHash,\n        bytes32 indexed newDataHash,\n        string cipherText,\n        address indexed owner\n    );\n    event CredentialDeleted(bytes32 indexed dataHash, address indexed owner);\n\n    function addCredential(\n        string calldata _cipherText,\n        bytes32 _dataHash\n    ) external {\n        bool hashExistsForUser = hashExists[msg.sender][_dataHash];\n        require(!hashExistsForUser, \"CredM: Data hash already exists!\");\n\n        credentials[msg.sender].push(Credential(_dataHash, _cipherText));\n        hashExistsForUser = true;\n\n        emit CredentialAdded(_dataHash, _cipherText, msg.sender);\n    }\n\n    function updateCredential(\n        uint256 _index,\n        string calldata _cipherText,\n        bytes32 _newDataHash\n    ) external {\n        bool hashExistsForUser = hashExists[msg.sender][_newDataHash];\n        require(\n            _index < credentials[msg.sender].length,\n            \"CredM: Credential does not exist!\"\n        );\n        require(!hashExistsForUser, \"CredM: New data hash already exists!\");\n\n        Credential storage cred = credentials[msg.sender][_index];\n        bytes32 oldDataHash = cred.dataHash;\n        hashExists[msg.sender][oldDataHash] = false;\n\n        cred.dataHash = _newDataHash;\n        cred.cipherText = _cipherText;\n        hashExistsForUser = true;\n\n        emit CredentialUpdated(\n            oldDataHash,\n            _newDataHash,\n            _cipherText,\n            msg.sender\n        );\n    }\n\n    function deleteCredential(uint256 _index) external {\n        uint256 credsLength = credentials[msg.sender].length;\n        require(_index < credsLength, \"CredM: Credential does not exist!\");\n\n        Credential storage cred = credentials[msg.sender][_index];\n        hashExists[msg.sender][cred.dataHash] = false;\n\n        // Remove credential by swapping with the last and popping\n        credentials[msg.sender][_index] = credentials[msg.sender][\n            credsLength - 1\n        ];\n        credentials[msg.sender].pop();\n\n        emit CredentialDeleted(cred.dataHash, msg.sender);\n    }\n\n    function getCredentialsOf(\n        address _user\n    ) external view returns (Credential[] memory) {\n        return credentials[_user];\n    }\n}\n"
+      }
+    }
+  }
+}

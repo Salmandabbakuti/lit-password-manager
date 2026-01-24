@@ -1,27 +1,22 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
-
-# Other files and folders
-.settings/
+# Node modules
 node_modules/
-build/
-generated/
-package-lock.json
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
-*.env
+# Compilation output
+/dist
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+# pnpm deploy output
+/bundle
 
-#Hardhat files
-cache
-artifacts
+# Hardhat Build Artifacts
+/artifacts
+
+# Hardhat compilation (v2) support directory
+/cache
+
+# Typechain output
+/types
+
+# Hardhat coverage reports
+/coverage
+
+.env
