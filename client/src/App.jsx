@@ -373,7 +373,7 @@ export default function App() {
         <Form
           form={form}
           layout="vertical"
-          autoComplete="on"
+          autoComplete="off"
           onFinish={handleSaveCredential}
         >
           <Spin spinning={loading?.write}>
