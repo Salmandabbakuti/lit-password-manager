@@ -29,6 +29,7 @@ export const decryptData = async (litClient, encryptedData, walletClient) => {
     },
     litClient
   });
+
   const accs = createAccBuilder()
     .requireWalletOwnership(walletClient?.account?.address)
     .on("ethereum")

@@ -1,12 +1,7 @@
 import { createAppKit } from "@reown/appkit/react";
-import { WagmiProvider } from "wagmi";
+import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 import { ConfigProvider, theme } from "antd";
 import { polygonAmoy, mainnet } from "@reown/appkit/networks";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-
-// 0. Setup queryClient
-const queryClient = new QueryClient();
 
 // 1. Get projectId from https://dashboard.reown.com
 const projectId = import.meta.env.VITE_REOWN_PROJECT_ID;
@@ -23,16 +18,9 @@ const metadata = {
 // 3. Set the networks
 const networks = [polygonAmoy, mainnet];
 
-// 4. Create Wagmi Adapter
-const wagmiAdapter = new WagmiAdapter({
-  networks,
-  projectId,
-  ssr: true
-});
-
-// 5. Create modal
+// 4. Create modal
 createAppKit({
-  adapters: [wagmiAdapter],
+  adapters: [new EthersAdapter()],
   networks,
   projectId,
   metadata,
@@ -46,22 +34,18 @@ createAppKit({
 
 export default function Web3Provider({ children }) {
   return (
-    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <ConfigProvider
-          theme={{
-            algorithm: theme.darkAlgorithm,
-            token: {
-              colorPrimary: "#667eea",
-              colorBgContainer: "#1f1f1f",
-              colorText: "#f0f0f0",
-              borderRadius: 8
-            }
-          }}
-        >
-          {children}
-        </ConfigProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: "#667eea",
+          colorBgContainer: "#1f1f1f",
+          colorText: "#f0f0f0",
+          borderRadius: 8
+        }
+      }}
+    >
+      {children}
+    </ConfigProvider>
   );
 }

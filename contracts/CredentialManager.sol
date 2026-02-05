@@ -72,10 +72,15 @@ contract CredentialManager {
         hashExists[msg.sender][cred.dataHash] = false;
 
         // Remove credential by swapping with the last and popping
-        credentials[msg.sender][_index] = credentials[msg.sender][
-            credsLength - 1
-        ];
-        credentials[msg.sender].pop();
+        // if index is last one, just pop last one
+        if (_index == credsLength - 1) {
+            credentials[msg.sender].pop();
+        } else {
+            credentials[msg.sender][_index] = credentials[msg.sender][
+                credsLength - 1
+            ];
+            credentials[msg.sender].pop();
+        }
 
         emit CredentialDeleted(cred.dataHash, msg.sender);
     }

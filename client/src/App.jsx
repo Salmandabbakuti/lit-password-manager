@@ -21,27 +21,24 @@ import {
   SyncOutlined,
   CaretRightOutlined
 } from "@ant-design/icons";
+import { BrowserProvider } from "ethers";
+import { createWalletClient, custom, getAddress } from "viem";
+import {
+  useAppKitProvider,
+  useAppKitAccount,
+  useAppKitState
+} from "@reown/appkit/react";
 import { createLitClient } from "@lit-protocol/lit-client";
 import { nagaDev } from "@lit-protocol/networks";
-import {
-  useConnection,
-  useWalletClient,
-  useReadContract,
-  useWriteContract,
-  useClient
-} from "wagmi";
-import { waitForTransactionReceipt } from "viem/actions";
 import { encryptData, decryptData } from "./utils/lit";
-import {
-  CREDENTIAL_MANAGAER_CONTRACT_ADDRESS,
-  CREDENTIAL_MANAGAER_CONTRACT_ABI
-} from "./utils/constants";
+import { credentialManagerContract } from "./utils";
 import "./App.css";
 
 export default function App() {
   const [credentials, setCredentials] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCredential, setSelectedCredential] = useState(null);
+  // rely purely on array indexes; -1 means "none selected"
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState({
     read: false,
@@ -50,49 +47,49 @@ export default function App() {
   });
   const [form] = Form.useForm();
 
-  const { address, isConnected } = useConnection();
-  const { data: walletClient } = useWalletClient();
-  const client = useClient();
-
-  const { data: credentialsData = [], refetch: refetchGetCredentialsOfUser } =
-    useReadContract({
-      abi: CREDENTIAL_MANAGAER_CONTRACT_ABI,
-      chainId: 80002,
-      address: CREDENTIAL_MANAGAER_CONTRACT_ADDRESS,
-      functionName: "getCredentialsOf",
-      args: [address]
-    });
-
-  const { mutateAsync: addCredentialsAsync } = useWriteContract();
-  const { mutateAsync: updateCredentialAsync } = useWriteContract();
-  const { mutateAsync: deleteCredentialAsync } = useWriteContract();
+  const { address: account, isConnected } = useAppKitAccount();
+  const { selectedNetworkId } = useAppKitState();
+  const { walletProvider } = useAppKitProvider("eip155");
 
   const handleGetCredentials = async () => {
-    console.log("Fetched Encrypted Credentials:", credentialsData);
-    const decryptedCredentials = [];
     setLoading((prev) => ({ ...prev, read: true }));
     try {
+      const credentialsData = await credentialManagerContract.getCredentialsOf(
+        account
+      );
+      console.log("Fetched Encrypted Credentials:", credentialsData);
       const litClient = await createLitClient({ network: nagaDev });
+      // prepare wallet client for decryption
+      const [account1] = await window.ethereum.request({
+        method: "eth_accounts"
+      });
 
-      for (const cred of credentialsData) {
-        // datahash without 0x prefix
-        const dataToEncryptHash = cred.dataHash.slice(2);
-        console.log("Decrypting credential with hash:", dataToEncryptHash);
-        const decryptedCredentialData = await decryptData(
-          litClient,
-          {
-            dataToEncryptHash,
-            ciphertext: cred.cipherText
-          },
-          walletClient
-        );
-        console.log("Decrypted Credential:", decryptedCredentialData);
-        const decryptedCredential = {
-          id: decryptedCredentials.length,
-          ...JSON.parse(decryptedCredentialData?.convertedData)
-        };
-        decryptedCredentials.push(decryptedCredential);
-      }
+      const walletClient = createWalletClient({
+        account: getAddress(account1),
+        transport: custom(window.ethereum)
+      });
+      // decrypt credentials concurrently while preserving order
+      const decryptedCredentials = await Promise.all(
+        credentialsData.map(async (cred) => {
+          // datahash without 0x prefix
+          const dataToEncryptHash = cred.dataHash.slice(2);
+          console.log("Decrypting credential with hash:", dataToEncryptHash);
+          const decryptedCredentialData = await decryptData(
+            litClient,
+            {
+              dataToEncryptHash,
+              ciphertext: cred.cipherText
+            },
+            walletClient
+          );
+          console.log("Decrypted Credential:", decryptedCredentialData);
+          // return the parsed credential object; do not attach an explicit `id`
+          const parsedCredential = JSON.parse(
+            decryptedCredentialData?.convertedData
+          );
+          return parsedCredential;
+        })
+      );
       console.log("Decrypted Credentials:", decryptedCredentials);
       setCredentials(decryptedCredentials);
       setLoading((prev) => ({ ...prev, read: false }));
@@ -105,29 +102,33 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (address) handleGetCredentials();
-  }, [address, credentialsData]);
+    if (account) handleGetCredentials();
+  }, [account]);
 
   // Open add credential modal
   const handleAddCredential = () => {
     setIsModalOpen(true);
     setIsEditMode(true);
     form.resetFields();
-    setSelectedCredential(null);
+    setSelectedIndex(-1);
   };
 
   // Open credential detail modal
-  const handleViewCredential = (credential) => {
+  const handleViewCredential = (index) => {
+    if (index == null || index < 0 || index >= credentials.length) return;
     setIsModalOpen(true);
-    setSelectedCredential(credential);
+    setSelectedIndex(index);
     setIsEditMode(false);
-    form.setFieldsValue(credential);
+    form.setFieldsValue(credentials[index]);
   };
 
   // Save credential changes
   const handleSaveCredential = async (values) => {
     if (!isConnected)
       message.error("Please connect your wallet to save changes");
+    console.log(selectedNetworkId);
+    if (selectedNetworkId !== "eip155:80002")
+      return message.error("Please connect to Amoy testnet");
     setLoading((prev) => ({ ...prev, write: true }));
     try {
       console.log("Form Values:", values);
@@ -136,35 +137,33 @@ export default function App() {
 
       const litClient = await createLitClient({ network: nagaDev });
 
+      // get signer
+      const ethersProvider = new BrowserProvider(walletProvider);
+      const signer = await ethersProvider.getSigner();
+
       const encryptedData = await encryptData(
         litClient,
         credentialsString,
-        address
+        account
       );
       console.log("Encrypted Data:", encryptedData);
+
+      const { ciphertext, dataToEncryptHash } = encryptedData;
+      // prefix with 0x for bytes compatibility
+      const dataHash = `0x${dataToEncryptHash}`;
       // Update existing credential
-      console.log("Selected Credential:", selectedCredential);
-      if (selectedCredential) {
-        const credentialIndex = selectedCredential.id;
+      console.log("Selected index:", selectedIndex);
+      if (selectedIndex !== -1) {
+        const credentialIndex = selectedIndex;
         console.log("Updating credential at index:", credentialIndex);
-        const updateTxHash = await updateCredentialAsync({
-          abi: CREDENTIAL_MANAGAER_CONTRACT_ABI,
-          address: CREDENTIAL_MANAGAER_CONTRACT_ADDRESS,
-          chainId: 80002,
-          functionName: "updateCredential",
-          args: [
-            credentialIndex,
-            encryptedData.ciphertext,
-            `0x${encryptedData.dataToEncryptHash}`
-          ]
-        });
-        console.log("updateCredential TxHash:", updateTxHash);
+
+        const updateTx = await credentialManagerContract
+          .connect(signer)
+          .updateCredential(credentialIndex, ciphertext, dataHash);
+        console.log("updateCredential TxHash:", updateTx.hash);
 
         // Wait for transaction receipt
-        const txReceipt = await waitForTransactionReceipt(client, {
-          hash: updateTxHash,
-          confirmations: 1
-        });
+        const txReceipt = await updateTx.wait();
         console.log("updateCredential TxReceipt:", txReceipt);
 
         // Update local state at index updated
@@ -176,30 +175,17 @@ export default function App() {
         message.success("Credential updated successfully");
       } else {
         // save as new credential
-        const addTxHash = await addCredentialsAsync({
-          abi: CREDENTIAL_MANAGAER_CONTRACT_ABI,
-          address: CREDENTIAL_MANAGAER_CONTRACT_ADDRESS,
-          chainId: 80002,
-          functionName: "addCredential",
-          args: [
-            encryptedData.ciphertext,
-            `0x${encryptedData.dataToEncryptHash}`
-          ]
-        });
-        console.log("addCredential TxHash:", addTxHash);
+        const addTx = await credentialManagerContract
+          .connect(signer)
+          .addCredential(ciphertext, dataHash);
+        console.log("addCredential TxHash:", addTx.hash);
 
         // Wait for transaction receipt
-        const txReceipt = await waitForTransactionReceipt(client, {
-          hash: addTxHash,
-          confirmations: 1
-        });
+        const txReceipt = await addTx.wait();
         console.log("addCredential TxReceipt:", txReceipt);
 
-        const newCredential = {
-          id: credentials.length,
-          ...values
-        };
-        setCredentials([...credentials, newCredential]);
+        // store values; index will be array index
+        setCredentials([...credentials, values]);
         setIsEditMode(false);
         setIsModalOpen(false);
         message.success("Credential added successfully");
@@ -217,35 +203,32 @@ export default function App() {
   };
 
   // Delete credential
-  const handleDeleteCredential = async (id) => {
+  const handleDeleteCredential = async (idx) => {
     if (!isConnected) message.error("Please connect your wallet first!");
+    if (selectedNetworkId !== "eip155:80002")
+      return message.error("Please connect to Amoy testnet");
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const txHash = await deleteCredentialAsync({
-        abi: CREDENTIAL_MANAGAER_CONTRACT_ABI,
-        address: CREDENTIAL_MANAGAER_CONTRACT_ADDRESS,
-        chainId: 80002,
-        functionName: "deleteCredential",
-        args: [id]
-      });
-      console.log("deleteCredential TxHash:", txHash);
-      const txReceipt = await waitForTransactionReceipt(client, {
-        hash: txHash,
-        confirmations: 1
-      });
+      const ethersProvider = new BrowserProvider(walletProvider);
+      const signer = await ethersProvider.getSigner();
+      const deleteTx = await credentialManagerContract
+        .connect(signer)
+        .deleteCredential(idx);
+      console.log("deleteCredential TxHash:", deleteTx.hash);
+      const txReceipt = await deleteTx.wait();
       console.log("deleteCredential TxReceipt:", txReceipt);
       // upon deletion we need to rearrange the local credentials state
       // same as in contract where the last element replaces the deleted one
       // pop the last element and replace the deleted index with it
       const updatedCredentials = [...credentials];
-      if (id < updatedCredentials.length - 1) {
-        updatedCredentials[id] =
-          updatedCredentials[updatedCredentials.length - 1];
-        updatedCredentials[id].id = id; // update id to match index
+      if (idx === updatedCredentials.length - 1) {
+        updatedCredentials.pop();
+      } else {
+        updatedCredentials.splice(idx, 1, updatedCredentials.pop());
       }
-      updatedCredentials.pop(); // remove last element
       message.success("Credential deleted successfully");
       setCredentials(updatedCredentials);
+      setSelectedIndex(-1);
       setIsModalOpen(false);
     } catch (error) {
       console.error("Failed to delete credential:", error);
@@ -273,11 +256,11 @@ export default function App() {
     },
     {
       key: "actions",
-      render: (_, record) => (
+      render: (_, record, idx) => (
         <Button
           type="text"
           icon={<CaretRightOutlined />}
-          onClick={() => handleViewCredential(record)}
+          onClick={() => handleViewCredential(idx)}
         />
       )
     }
@@ -301,7 +284,7 @@ export default function App() {
               type="default"
               shape="circle"
               icon={<SyncOutlined spin={loading?.read} />}
-              onClick={refetchGetCredentialsOfUser}
+              onClick={handleGetCredentials}
             />
           </Space>
         }
@@ -309,8 +292,8 @@ export default function App() {
         <Table
           columns={columns}
           loading={loading?.read}
-          onRow={(record) => ({
-            onClick: () => handleViewCredential(record),
+          onRow={(_, idx) => ({
+            onClick: () => handleViewCredential(idx),
             style: { cursor: "pointer" }
           })}
           dataSource={credentials}
@@ -327,8 +310,9 @@ export default function App() {
               />
             )
           }}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
+          // use array index as identity since we rely on indexes
+          rowKey={(_, idx) => idx}
+          pagination={{ pageSize: 20 }}
         />
       </Card>
 
@@ -336,12 +320,12 @@ export default function App() {
       <Modal
         title={
           // Modal title changes based on mode with Delete button
-          selectedCredential ? (
+          selectedIndex !== -1 && credentials[selectedIndex] ? (
             <Space style={{ justifyContent: "space-between", width: "95%" }}>
               {"Credential Details"}
               <Popconfirm
                 title="Are you sure to delete this credential?"
-                onConfirm={() => handleDeleteCredential(selectedCredential.id)}
+                onConfirm={() => handleDeleteCredential(selectedIndex)}
                 okText="Yes"
                 cancelText="No"
               >
