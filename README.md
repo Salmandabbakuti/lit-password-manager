@@ -6,8 +6,8 @@ Lit Protocol is a decentralized key management network powered by threshold cryp
 
 #### Tech Stack
 
-- Frontend: Next.js, Antd
-- Web3 Client: Wagmi, viem
+- Frontend: React Vite, Antd
+- Web3 Client: Ethers, viem
 - Smartcontracts: Solidity, Hardhat
 - Encryption: Lit Protocol
 - Blockchain Network: Polygon Amoy
@@ -49,7 +49,7 @@ const accessControlConditions = [
 ### Deployed Resources:
 
 - [Lit Password Manager App](https://lit-password-manager.vercel.app/)
-- [Lit Password Manager Smartcontract](https://amoy.polygonscan.com/address/0x7423BF3bf09B5829F619BFcb7F4811a6f11F650b)
+- [Lit Password Manager Smartcontract](https://amoy.polygonscan.com/address/0x192C44BA4609E798C856fac0e39734Bc3A790B52)
 
 ## Getting Started
 
@@ -90,12 +90,8 @@ I do not give any warranties and will not be liable for any loss incurred throug
 
 ### Demo
 
-https://user-images.githubusercontent.com/29351207/202835182-75ab1802-73a2-4cc9-ad89-0154cd1e6a6e.mp4
+<img width="1440" height="781" alt="Screenshot 2026-02-05 at 12 15 43 PM" src="https://github.com/user-attachments/assets/0abd7d7f-21f0-437b-bd68-cee80b50cf05" />
 
-![Screenshot1](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/home-screenshot.png)
+<img width="1440" height="781" alt="Screenshot 2026-02-05 at 12 14 35 PM" src="https://github.com/user-attachments/assets/095b2210-446b-4559-b320-870b5d6f2ff6" />
 
-![Screenshot2](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/edit-password.png)
-
-![Screenshot3](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/update_tx-screenshot.png)
-
-![Screenshot4](https://github.com/Salmandabbakuti/lit-password-manager/blob/main/resources/save_success-screenshot.png)
+<img width="1440" height="781" alt="Screenshot 2026-02-05 at 12 14 11 PM" src="https://github.com/user-attachments/assets/0c05f6d4-cc8a-4319-aff9-2dea9e9a9adf" />
